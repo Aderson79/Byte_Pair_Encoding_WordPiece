@@ -1,45 +1,38 @@
-# Laboratório 6 - Tokenização: BPE (do zero) & WordPiece (Hugging Face)
-
-import re
-from collections import defaultdict
+from tarefa1_frequencias import get_stats, vocab as vocab_inicial
+from tarefa2_loop import merge_vocab
 from transformers import AutoTokenizer
 
-# ============================================================
-# TAREFA 1: Motor de Frequências (BPE)
-# ============================================================
-
-# Vocabulário inicial fornecido pelo enunciado
-vocab = {
-    'l o w </w>': 5,
-    'l o w e r </w>': 2,
-    'n e w e s t </w>': 6,
-    'w i d e s t </w>': 3
-}
+print("\n=== TAREFA 1 ===\n")
+stats = get_stats(vocab_inicial)
+print(f"Par ('e', 's'): {stats[('e', 's')]}  (esperado: 9)")
+assert stats[('e', 's')] == 9, "ERRO: par ('e','s') deveria ser 9!"
+print("Validacao aprovada!!!\n")
 
 
-def get_stats(vocab):
-    """Conta a frequência de cada par adjacente de símbolos no vocabulário."""
-    pass
+print("=== TAREFA 2 ===\n")
+vocab = dict(vocab_inicial)
+num_merges = 5
+
+for i in range(num_merges):
+    pairs = get_stats(vocab)
+    best = max(pairs, key=pairs.get)
+    print(f"Iteracao {i + 1}: merge {best} (freq={pairs[best]})")
+    vocab = merge_vocab(best, vocab)
+
+print(f"\nVocabulario final apos {num_merges} merges:")
+for word, freq in vocab.items():
+    print(f"  {word}: {freq}")
+
+tokens_finais = ' '.join(vocab.keys())
+assert 'est</w>' in tokens_finais, "ERRO: token 'est</w>' nao foi criado!"
+print("\nToken 'est</w>' encontrado - Validacao aprovada!!!\n")
 
 
-# TODO: Validar que get_stats retorna ('e', 's'): 9
+print("=== TAREFA 3 ===\n")
+tokenizer = AutoTokenizer.from_pretrained("bert-base-multilingual-cased")
 
-# ============================================================
-# TAREFA 2: Loop de Fusão (Merges)
-# ============================================================
+frase = "Os hiper-parametros do transformer sao inconstitucionalmente dificeis de ajustar."
+tokens = tokenizer.tokenize(frase)
 
-
-def merge_vocab(pair, v_in):
-    """Substitui todas as ocorrências do par pelo símbolo unido no vocabulário."""
-    pass
-
-
-# TODO: Executar 5 iterações do loop de treinamento BPE
-# TODO: Validar que o token 'est</w>' foi criado
-
-# ============================================================
-# TAREFA 3: WordPiece com Hugging Face
-# ============================================================
-
-# TODO: Carregar bert-base-multilingual-cased
-# TODO: Tokenizar a frase de teste e imprimir tokens
+print(f"Frase: {frase}\n")
+print(f"Tokens: {tokens}")
